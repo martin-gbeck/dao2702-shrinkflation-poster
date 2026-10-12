@@ -13,18 +13,16 @@
 
 # %% [markdown]
 # # Shrinkflation in Singapore's private homes
-# DAO2702 group assignment, poster source code.
+# DAO2702 group assignment: the code behind the poster.
 #
-# **Question.** Did Singapore's private homes shrink to keep the price tag within reach, and is that still happening in 2025?
+# Did Singapore's private homes shrink to keep the price tag within reach, and is that still happening in 2025? The notebook answers in three steps that match the poster's rows: what shrank (charts 1 to 3), whether the shrink is real and how it works (4 to 6), and why it happened and what changed (7 to 9).
 #
-# **Data.**
-# - `properties2025.csv`: URA private residential transactions for 2025 (course dataset).
-# - `properties23.csv`: the same fields for Aug 2020 to Dec 2023 (Lecture 6 dataset), used for the trend.
-# - `ura_ppi_quarterly.csv`: URA Private Residential Property Price Index, 1Q2009 = 100 (data.gov.sg).
-# - `hh_income_change.csv`: SingStat yearly change in median monthly household employment income, resident employed households (data.gov.sg).
-# - Rules used as parameters: MAS TDSR 55% with a 4% stress-test rate, 75% LTV; URA dwelling-unit caps (GFA / 70 m² from 2012, GFA / 85 m² from 2019).
-#
-# **The nine charts** (each a different chart type), in poster order:
+# **Data**
+# - `properties2025.csv`: URA private home transactions in 2025, the course dataset.
+# - `properties23.csv`: the same columns for Aug 2020 to Dec 2023, from Lecture 6. It adds the trend.
+# - `ura_ppi_quarterly.csv`: URA's private residential price index, 1Q2009 = 100, from data.gov.sg.
+# - `hh_income_change.csv`: SingStat's yearly change in median household employment income, from data.gov.sg.
+# - Two sets of rules used as inputs. MAS caps loan repayments at 55% of income, tested at 4% interest or more, and lends at most 75% of the price. URA caps how many units a project outside the city centre may build: floor area ÷ 70 m² from 2012, ÷ 85 m² from 2019.
 #
 # | # | Question | Chart |
 # |---|---|---|
@@ -33,15 +31,18 @@
 # | 3 | Which sizes disappeared? | 100% stacked bar |
 # | 4 | Is it just location? | Coefficient plot |
 # | 5 | Did the shrink hold the price tag? | Scatter with constant-price curves |
-# | 6 | How do developers price a launch? | Violin |
+# | 6 | How is a launch priced? | Violin |
 # | 7 | Why then? Prices against incomes | Diverging lollipop |
 # | 8 | How much home can a household borrow for? | Sensitivity heat map |
-# | 9 | What happens once shrinking is capped? | Waterfall |
+# | 9 | What happened once shrinking was capped? | Waterfall |
 #
-# Run top to bottom. Figures land in `figs/`.
+# Run the cells top to bottom. Each chart is saved to `figs/` at the size it has on the poster.
 
 # %% [markdown]
-# ## 0. Setup, cleaning and style
+# ## 0. Setup and cleaning
+# Both transaction files have the same 12 columns, so they are stacked into one table. Three fixes: "freenhold" in the 2025 file becomes "freehold", the month text becomes a date, and 155 rows with a floor area under 200 or over 5,000 sq ft are dropped. Those are en-bloc sales of whole buildings and penthouses, which would pull the medians around.
+#
+# A home's vintage is the year its lease started. For a 99-year leasehold that is roughly the year the government sold the land, which is when the developer planned the unit sizes. Freehold homes have no lease-start year, so the vintage charts (2 to 5) use 99-year leaseholds only.
 
 # %%
 from pathlib import Path
@@ -71,7 +72,7 @@ mpl.rcParams.update({
     "grid.color": GRID, "grid.linewidth": 0.4, "legend.frameon": False, "legend.fontsize": 5.5,
     "figure.dpi": 150, "savefig.dpi": 600, "axes.unicode_minus": True,
 })
-FIG_W, FIG_H = 2.3, 1.55   # inches, one poster panel
+FIG_W, FIG_H = 2.36, 1.95   # inches, one poster panel
 
 raw25 = pl.read_csv("data/properties2025.csv", infer_schema_length=None)
 raw23 = pl.read_csv("data/properties23.csv", infer_schema_length=None)
@@ -86,7 +87,7 @@ df = (
 )
 print(f"rows: {raw23.height + raw25.height:,} raw, {df.height:,} kept, {raw23.height + raw25.height - df.height} dropped")
 
-# Vintage = lease-commencement year of 99-year leaseholds, which is roughly the year the land was sold
+# Vintage = lease-start year of 99-year leaseholds, roughly the year the land was sold
 ERAS = ["1990–08", "2009–12", "2013–18", "2019–25"]
 lease = (
     df.filter((pl.col("tenure") == "99 years") & (pl.col("commence") >= 1990))
@@ -97,8 +98,8 @@ print(f"2025 rows: {d25.height:,}; 99-year leasehold rows with a vintage (2020�
 d25.group_by("sale").agg(pl.len(), pl.col("area").median(), pl.col("psf").median().round(0), pl.col("price").median()).sort("sale")
 
 # %% [markdown]
-# ## 1. Back-to-back histogram: 2025 new launches against resale homes
-# Sub sales (resold before completion, 4% of 2025) are left out of new-vs-resale comparisons.
+# ## 1. Back-to-back histogram: new launches against resale homes in 2025
+# New launches sit above the axis and resale homes below it, so the two shapes can be compared without bars hiding each other. Each bar is a 50 sq ft band, as a share of that group's sales. Sub sales (units resold before completion, 4% of 2025) are left out, since they are neither new nor resale.
 
 # %%
 new_a = d25.filter(pl.col("sale") == "New Sale")["area"].to_numpy()
@@ -133,8 +134,11 @@ fig.savefig("figs/01_histogram.png")
 plt.show()
 
 # %% [markdown]
-# ## 2. Line with interquartile band: unit size by vintage
-# All 2020–25 transactions of 99-year leaseholds, grouped by lease-commencement year. Years with fewer than 100 transactions are left out.
+# The median new unit has 797 sq ft against 1,012 for a resale home, 21% smaller. The difference is in the large sizes: homes of 1,200 sq ft or more are 34% of resale sales but only 18% of new launches.
+
+# %% [markdown]
+# ## 2. Line with interquartile band: unit size by lease-start year
+# Every 2020 to 2025 sale of a 99-year leasehold, grouped by the year its lease started. The line is the median and the band covers the middle half of units, so both the typical home and the spread are visible. Years with fewer than 100 sales are left out.
 
 # %%
 by_year = (
@@ -167,7 +171,11 @@ fig.savefig("figs/02_line_vintage.png")
 plt.show()
 
 # %% [markdown]
-# ## 3. 100% stacked bar: which unit sizes disappeared
+# Sizes held near 1,240 sq ft for land sold up to 2008, then fell to about 710 sq ft for land sold in 2013 to 2015, a drop of 43%. Since then the median has stayed between roughly 680 and 860 sq ft. The fall stopped around URA's 2012 cap on the number of units per project, which was tightened in 2019.
+
+# %% [markdown]
+# ## 3. 100% stacked bar: which sizes disappeared
+# The same leasehold sales in four lease-start eras and five size bands. Every bar adds up to 100%, so the chart shows the mix and not the number of sales. Shoeboxes (506 sq ft or less, about 47 m²) are orange because they are the size URA's cap was aimed at.
 
 # %%
 BANDS = ["≤506 shoebox", "507–750", "751–1,000", "1,001–1,300", ">1,300"]
@@ -205,9 +213,11 @@ fig.savefig("figs/03_stacked_mix.png")
 plt.show()
 
 # %% [markdown]
+# Homes over 1,300 sq ft fell from 34% of units on pre-2009 land to 8% on 2013 to 2018 land, while shoeboxes rose from 1% to 13%. After the 2019 cap shoeboxes dropped back to 9%, but big homes stayed rare at 11%. Most of the growth went to 507 to 750 sq ft, the one and two-bedroom sizes, which went from 5% to 38% of units.
+
+# %% [markdown]
 # ## 4. Coefficient plot: is the shrink just location?
-# OLS of ln(floor area) on vintage era (base 1990–2008). The controlled model adds district, property type (apartment or condominium)
-# and transaction-year effects. Standard errors are clustered by project, since units in one project are designed together.
+# Newer projects could be smaller only because they were built in different districts. To test that, log floor area is regressed on the lease-start era (against 1990 to 2008), first on its own and then with district, property type (apartment or condominium) and year-of-sale effects. Standard errors are clustered by project, because units in one project are designed together and are not independent. The coefficient plot shows both estimates with their 95% confidence intervals side by side.
 
 # %%
 pdf = lease.select("area", "era", "district", "type", "year", "project").to_pandas()
@@ -248,10 +258,13 @@ fig.savefig("figs/04_coefficients.png")
 plt.show()
 
 # %% [markdown]
+# Adding the controls moves each estimate by about one percentage point. Homes on 2013 to 2018 land are 34% smaller than 1990 to 2008 homes in the same district, of the same type and sold in the same year, so location does not explain the shrink.
+
+# %% [markdown]
 # ## 5. Scatter with constant-price curves: did the shrink hold the price tag?
-# 2025 transactions only, so every price is at 2025 levels. Dots are project medians (projects with at least 10 sales); large markers are era medians.
-# On log axes, every point on a grey curve has the same total price. Older homes are also cheaper per sq ft because of age and a shorter
-# remaining lease, so this is what a 2025 buyer chooses between, not the original launch prices.
+# 2025 sales only, so all prices are from the same year. Each dot is one project's median floor area and PSF, and the large markers are the medians of each lease-start era. Both axes are logarithmic, so every point on one grey curve has the same total price. Moving along a curve means trading floor area for PSF at an unchanged price tag.
+#
+# Older homes are also cheaper per sq ft because of their age and shorter remaining lease. The chart shows what a buyer in 2025 chooses between, not what each home cost when it launched.
 
 # %%
 l25 = lease.filter(pl.col("year") == 2025)
@@ -294,8 +307,11 @@ fig.savefig("figs/05_scatter_isoprice.png")
 plt.show()
 
 # %% [markdown]
+# From 1990–2008 land to 2013–2018 land, floor area fell 40% while PSF rose 27%, and the median price fell from S$1.72M to S$1.45M. The smaller size more than paid for the higher PSF. Homes on post-2019 land are 7% larger and 31% dearer per sq ft, and their median price jumps to S$2.05M.
+
+# %% [markdown]
 # ## 6. Violin: how a launch is priced
-# 2025 new-sale transactions in projects with at least 20 sales. Each unit's PSF is compared with its own project's median PSF, which removes location.
+# 2025 new sales in projects with at least 20 sales. Each unit's PSF is compared with its own project's median PSF, which takes location out, and units are grouped by size. A violin shows the whole spread in each band. The white dot is the median and the black bar the middle half.
 
 # %%
 VB = ["≤506", "507–750", "751–1,000", "1,001–1,300", ">1,300"]
@@ -331,9 +347,11 @@ fig.savefig("figs/06_violin_pricing.png")
 plt.show()
 
 # %% [markdown]
-# ## 7. Diverging lollipop: home prices against incomes (external data)
-# Price-to-income index = URA non-landed private price index (yearly average of quarters) / SingStat median household employment income
-# (resident employed households, nominal, including employer CPF; chained from yearly changes). Shown against its 2001–25 average.
+# In every size band the median sits within 1.5% of its project's PSF. Inside a launch, a 10% larger unit costs 0.08% less per sq ft, so the price rises almost one for one with floor area. Floor area is the one lever a developer has on the price tag.
+
+# %% [markdown]
+# ## 7. Diverging lollipop: home prices against incomes
+# This chart uses outside data. The price-to-income ratio divides URA's non-landed price index (yearly average of the quarters) by an index of median household employment income, built by chaining SingStat's yearly changes from 2000 = 100. Income covers resident employed households and includes employer CPF. Each year is shown as its distance from the 2001 to 2025 average, orange above and blue below. Lollipops keep 25 yearly values readable without the visual weight of 25 bars.
 
 # %%
 ppi = (
@@ -379,10 +397,11 @@ fig.savefig("figs/07_lollipop_macro.png")
 plt.show()
 
 # %% [markdown]
+# Homes were 6 to 18% less affordable than usual in every year from 2007 to 2013 except 2009, which is when the land behind the smallest homes in chart 2 was sold. Incomes then grew faster than prices, and by 2025 the ratio is back near its average, 2% below.
+
+# %% [markdown]
 # ## 8. Sensitivity heat map: how much home a household can borrow for
-# Largest loan allowed by MAS: monthly instalment ≤ 55% of gross income (TDSR), computed at max(loan rate, 4%) over 30 years.
-# With a 75% loan-to-value cap the price ceiling is loan / 0.75. Affordable floor area = price ceiling / PSF.
-# Cash and CPF top-ups beyond the 25% down payment are ignored. Because banks must use at least 4%, rate cuts below 4% do not change the table.
+# MAS limits a home loan so that repayments are at most 55% of gross monthly income (the TDSR), worked out at the actual loan rate or 4%, whichever is higher, over 30 years. Banks lend at most 75% of the price, so the most a household can pay is the loan divided by 0.75. Dividing that by PSF gives the largest floor area it can afford. The heat map runs this for six incomes and seven PSF levels to show how the answer moves with each. Cash or CPF beyond the 25% down payment is ignored.
 
 # %%
 TDSR, LTV, STRESS, MONTHS = 0.55, 0.75, 0.04, 360
@@ -423,10 +442,11 @@ fig.savefig("figs/08_heatmap_tdsr.png")
 plt.show()
 
 # %% [markdown]
-# ## 9. Waterfall: once shrinking is capped, the price tag rises
-# New-sale transactions, Aug–Dec 2020 (the first months in the Lecture 6 file) against 2025. Uses geometric means, so
-# ln(price) = ln(PSF) + ln(area) splits the change exactly. Each segment (CCR/RCR/OCR) is compared with itself and weighted by its 2025 share,
-# so a shift in where launches happen does not count as a price change.
+# At the 2025 median household income of S$12,446, the limit is a S$1.91M home. At the 2020 new-launch PSF that bought 1,117 sq ft. At the 2025 PSF it buys 743 sq ft, less than the median new unit of 797 sq ft. Because banks must test at 4% or more, rate cuts below 4% do not change any cell in the table.
+
+# %% [markdown]
+# ## 9. Waterfall: what happened once shrinking was capped
+# New sales in Aug to Dec 2020, the first months in the Lecture 6 file, against 2025. With geometric means, ln(price) = ln(PSF) + ln(floor area), so the price change splits exactly into a PSF part and a floor-area part. Each of URA's three regions (core central CCR, rest of central RCR, outside central OCR) is compared with itself and weighted by its 2025 sales, so a shift in where launches happen does not count as a price change. The waterfall shows how the two parts stack from the 2020 price to the 2025 price.
 
 # %%
 seg = (
@@ -467,7 +487,10 @@ fig.savefig("figs/09_waterfall.png")
 plt.show()
 
 # %% [markdown]
-# ## 10. Numbers quoted on the poster
+# The typical new-launch price rose 49%, from S$1.46M to S$2.18M. PSF added 39% and floor area 7%. Units grew a little instead of shrinking, so buyers now carry the whole PSF rise.
+
+# %% [markdown]
+# ## 10. Counts used on the poster
 
 # %%
 print(f"2025 rows {raw25.height:,}; kept {d25.height:,}; new {len(new_a):,}, resale {len(res_a):,}, sub sale {d25.filter(pl.col('sale') == 'Sub Sale').height}")
@@ -475,11 +498,15 @@ print(f"2020–23 rows {raw23.height:,}; kept {df.filter(pl.col('year') < 2025).
 print(f"new vs resale median area: {med_new:.0f} vs {med_res:.0f} ({med_new / med_res - 1:+.1%}); PSF {new25:,.0f} vs {d25.filter(pl.col('sale') == 'Resale')['psf'].median():,.0f}")
 
 # %% [markdown]
+# ## Conclusion
+# Yes, Singapore's private homes shrank to keep the price tag within reach, and URA's unit cap has stopped it. Homes on land sold from 2009 to 2013, when prices ran furthest ahead of incomes, are about 40% smaller than older homes, by the same margin within each district. Because a launch is priced per sq ft, a smaller unit was the only way to hold the price tag down, and in 2025 prices those homes still cost less than older, bigger ones. Since the 2019 cap the shrink has stopped, and the new-launch price tag rose 49% from late 2020 to 2025, close to what a median household can borrow.
+#
+# Limitations: the eras are compared at 2025 prices, not at their launch prices, and older homes also lose value with age and a shorter lease. The data has no bedroom count, 2024 is missing, and the income series includes employer CPF, so real borrowing power is a little lower than in chart 8. All results are associations, not causal effects.
+#
 # ## References
 # 1. URA REALIS private residential transactions, 2025 (`properties2025.csv`, course dataset) and Aug 2020 to Dec 2023 (`properties23.csv`, Lecture 6).
 # 2. URA, Private Residential Property Price Index (1Q2009 = 100), quarterly. data.gov.sg dataset d_97f8a2e995022d311c6c68cfda6d034c.
-# 3. SingStat, Change in median monthly household employment income, 2000 to 2025. data.gov.sg dataset d_968496622a54acf5f67256434453b94c; median household income S$12,446 from Key Household Income Trends 2025 (press release, 9 Feb 2026).
+# 3. SingStat, change in median monthly household employment income, 2000 to 2025. data.gov.sg dataset d_968496622a54acf5f67256434453b94c. Median household income of S$12,446 from Key Household Income Trends 2025 (press release, 9 Feb 2026).
 # 4. MAS, TDSR of 55% (from 16 Dec 2021) and 4% medium-term interest rate floor (from 30 Sep 2022). Summary: https://www.dbs.com.sg/personal/articles/nav/budget-spend/what-to-know-about-TDSR
 # 5. URA circular DC18-06 (17 Oct 2018): maximum dwelling units outside the Central Area = GFA / 85 m² from 17 Jan 2019, replacing GFA / 70 m² (from Jan 2012). https://www.ura.gov.sg/guidelines/archived-circulars/dc18-06/
-# 6. Lee Sze Teck (Huttons), "Are home sizes in Singapore shrinking?", EdgeProp, 7 Mar 2025. https://www.edgeprop.sg/property-news/are-home-sizes-singapore-shrinking
-# 7. ONS (2019), "The impact of shrinkflation on CPIH, UK". https://www.ons.gov.uk/economy/inflationandpriceindices/articles/theimpactofshrinkflationoncpihuk/howmanyofourproductsaregettingsmaller
+# 6. ONS (2019), "The impact of shrinkflation on CPIH, UK". https://www.ons.gov.uk/economy/inflationandpriceindices/articles/theimpactofshrinkflationoncpihuk/howmanyofourproductsaregettingsmaller
