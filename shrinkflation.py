@@ -72,7 +72,7 @@ mpl.rcParams.update({
     "grid.color": GRID, "grid.linewidth": 0.4, "legend.frameon": False, "legend.fontsize": 5.5,
     "figure.dpi": 150, "savefig.dpi": 600, "axes.unicode_minus": True,
 })
-FIG_W, FIG_H = 2.36, 1.95   # inches, one poster panel
+FIG_W, FIG_H = 2.36, 2.2   # inches, one poster panel
 
 raw25 = pl.read_csv("data/properties2025.csv", infer_schema_length=None)
 raw23 = pl.read_csv("data/properties23.csv", infer_schema_length=None)

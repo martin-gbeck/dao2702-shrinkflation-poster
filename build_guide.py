@@ -108,12 +108,19 @@ def table(header: list[str], rows: list[list[str]], widths: list[float], bold_fi
     doc.add_paragraph()
 
 
+def lead(text: str) -> None:
+    """Transition line that opens the next chart's page."""
+    para(text, color=INK2)
+    doc.paragraphs[-1].paragraph_format.page_break_before = True
+    doc.paragraphs[-1].paragraph_format.keep_with_next = True
+
+
 def chart(num: int, kind: str, fig: str, takeaway: str, sections: list[tuple[str, list[str] | str]]) -> None:
     h = doc.add_heading(f"Chart {num}: {kind}", level=2)
-    h.paragraph_format.page_break_before = True
+    h.paragraph_format.page_break_before = False   # each chart starts on the page its lead-in line (or the section intro) opens
     para(takeaway, size=11, color=ORANGE, bold_all=True)
     doc.paragraphs[-1].paragraph_format.keep_with_next = True
-    doc.add_picture(f"figs/{fig}", width=Cm(8.6))
+    doc.add_picture(f"figs/{fig}", width=Cm(7.9))
     doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
     for head, body in sections:
         doc.add_heading(head, level=3)
@@ -136,9 +143,20 @@ para("In 2019 URA tightened its cap on how many units a project may build, and t
      "the price tag rises instead: a typical new launch cost 49% more in 2025 than in late 2020, and at 2025 launch prices the median "
      "household can borrow for less floor area than the median new unit.")
 
-doc.add_heading("2. How the poster is built", level=1)
+doc.add_heading("2. What we hand in", level=1)
 bullets([
-    "**Top:** the question, and six key terms you need to read the charts.",
+    "**Deadline:** Friday 16 October 2026, 23:59. Up to 24 hours late costs 20%. Later than that counts as no submission.",
+    "**One zip file** named Poster_Jupyter, holding the single-sided A4 poster as a PDF and the code. The course outline asks for the code "
+    "as HTML and the Canvas brief asks for IPYNB, so we hand in both: shrinkflation.ipynb and shrinkflation.html.",
+    "**How it is graded:** mainly on the quality of the charts (the right chart for the data, following plotting conventions) and on the "
+    "insights the charts and comments give. The poster should carry short comments with the key findings or recommendations.",
+    "**Team Jupyter:** Martin, Huaitao (Aizen) Yu, Manan, Linda, Midhvan Agarwal and Hoyoung Hwang. Before submitting, check everyone's name is "
+    "spelled the way they want it on the poster, export the PDF from PowerPoint and check it is one page.",
+])
+
+doc.add_heading("3. How the poster is built", level=1)
+bullets([
+    "**Top:** the question, with one grey line underneath holding the few terms you need to read the charts. The key terms table below explains them in full.",
     "**Row 1, what shrank (charts 1 to 3):** the size gap today, when it opened, and which sizes disappeared.",
     "**Row 2, is it real and how does it work (4 to 6):** a check that it is not location, what the shrink did to price tags, and how a launch is priced.",
     "**Row 3, why it happened and what changed (7 to 9):** affordability over 25 years, what a household can borrow, and what happened after the cap.",
@@ -147,7 +165,7 @@ bullets([
 para("Every chart has one bold line on top. That line is the single most important takeaway, with a number you can read off the chart. "
      "When you present, say that line first, then point to where it comes from on the chart.")
 
-doc.add_heading("3. Key terms", level=1)
+doc.add_heading("4. Key terms", level=1)
 table(["Term", "What it means", "Charts"], [
     ["Shrinkflation", "A product shrinks while its price stays put, so the price per unit rises without the price tag moving. The UK statistics "
                       "office (ONS) uses the term for groceries. Here the product is floor area.", "All"],
@@ -167,7 +185,60 @@ table(["Term", "What it means", "Charts"], [
     ["Median", "The middle value. Used throughout because a few very large or very expensive homes would pull an average.", "All"],
 ], [3.4, 11.2, 2.0])
 
-doc.add_heading("4. Data and cleaning", level=1)
+doc.add_heading("5. Background in two minutes", level=1)
+bullets([
+    "Most Singaporeans live in public HDB flats. Our data covers only the private market: condominiums and apartments sold by developers "
+    "and resold between owners.",
+    "Much of the land for private homes is sold by the government through land tenders (the Government Land Sales programme). A developer who wins "
+    "a site gets a 99-year lease, plans the units, then launches them for sale, usually before the building is finished.",
+    "Two agencies set the rules that matter here. URA (Urban Redevelopment Authority) plans land use and publishes the transaction data and the "
+    "price index. MAS (Monetary Authority of Singapore) sets the lending rules that cap how much a buyer can borrow.",
+    "Singapore quotes property prices per square foot (PSF), and floor areas in square feet. 1 m² is about 10.76 sq ft, so 85 m² is about "
+    "915 sq ft.",
+])
+
+doc.add_heading("6. The URA unit cap in detail", level=1)
+para("A unit is one home in a building: one apartment or condo flat. A tower with 300 apartments has 300 units. The cap does not limit how "
+     "small a single unit can be. It limits how many units a project may have:")
+para("**Maximum number of units = total floor area of the project ÷ 85 m²** (70 m² from 2012 to 2018)")
+bullets([
+    "**Worked example:** a site allowed 17,000 m² of floor area may have at most 17,000 ÷ 85 = 200 units. Squeezing in 400 shoeboxes is no "
+    "longer allowed, so the homes have to average about 85 m² of floor area each.",
+    "**It is a floor on the average, not a fixed size.** A developer can still build some small units if other units are big, and can always "
+    "choose fewer, bigger units.",
+    "**Floor area here is gross floor area**, which includes a share of space such as corridors. The flat a buyer gets is smaller than its share "
+    "of gross floor area, which is why the post-2019 medians on the poster sit around 760 to 860 sq ft and not at 915.",
+    "**Where it applies:** projects outside the Central Area. In nine neighbourhoods (Marine Parade, Joo Chiat-Mountbatten, Telok Kurau-Jalan "
+    "Eunos, Balestier, Stevens-Chancery, Pasir Panjang, Kovan-How Sun, Shelford and Loyang) the divisor is 100 m² [8]. Since January 2023 the "
+    "Central Area has its own rule: at least 20% of units in a project must be 70 m² or larger [7].",
+    "**Timeline:** 70 m² from January 2012 (announced in 2011), raised to 85 m² from 17 January 2019 (announced 17 October 2018) [5]. Before "
+    "2012 there was no cap, which is when shoeboxes spread.",
+    "**Why URA did it:** to curb the spread of shoebox units and to stop new projects from straining local roads, schools and transport with "
+    "more households than an area was planned for [8].",
+    "**How it shows on the poster:** the vertical lines in chart 2, shoeboxes falling from 13% to 9% in chart 3, homes on post-2019 land being 7% "
+    "larger in chart 5, and floor area adding +7% to the price tag in chart 9.",
+    "**What we cannot claim:** that the cap caused the shrink to stop. The timing fits, but no chart isolates the cap from everything else that "
+    "happened in those years.",
+])
+
+doc.add_heading("7. Reading the statistics", level=1)
+table(["Term", "Plain meaning", "Where"], [
+    ["Median", "The middle value when everything is sorted. Half the homes are smaller, half bigger. Used because a few huge homes would drag an average up.", "All"],
+    ["Middle 50% (interquartile range)", "The range from the 25th to the 75th percentile: where the middle half of homes sit.", "2, 6"],
+    ["Log scale", "Each step on the axis multiplies the value instead of adding to it. On log axes, price = floor area × PSF becomes a straight "
+                  "line, which is why the constant-price curves in chart 5 are straight.", "5"],
+    ["Regression with controls", "A model that compares eras while holding other things fixed, here district, property type and year of sale. "
+                                 "It answers: among otherwise similar homes, how much smaller is each era?", "4"],
+    ["95% confidence interval", "The range the true value very likely sits in, given the data. If the interval does not cross zero, the gap is "
+                                "not a fluke of which homes happened to sell.", "4"],
+    ["Clustered standard errors", "Units in one project are designed together, so 1,000 sales in one project are not 1,000 independent "
+                                  "observations. Clustering by project makes the intervals honest about that.", "4"],
+    ["Geometric mean", "The average of the logs, turned back into a number. It lets a price change split exactly into a PSF part and a floor-area "
+                       "part.", "9"],
+    ["Index (2009 = 100)", "A series rescaled so one year equals 100. A value of 200 means double the base year.", "7"],
+], [4.0, 10.6, 2.0])
+
+doc.add_heading("8. Data and cleaning", level=1)
 bullets([
     "**properties2025.csv** (course dataset): 24,151 private home transactions in 2025, 12 columns.",
     "**properties23.csv** (Lecture 6): 74,571 transactions from Aug 2020 to Dec 2023 with the same columns. Aug to Oct 2021 is missing in the "
@@ -183,7 +254,16 @@ bullets([
 ])
 
 # ================= charts =================
-doc.add_heading("5. Chart by chart", level=1)
+doc.add_heading("9. Files and how to rerun", level=1)
+bullets([
+    "**shrinkflation.ipynb:** the notebook we hand in. It loads and cleans the data, draws all nine charts, prints every number on the poster "
+    "and ends with the conclusion and references. It runs top to bottom in Colab or Jupyter if the data folder sits next to it, and needs "
+    "polars, numpy, matplotlib and statsmodels (Colab has all four).",
+    "**data/** holds the four CSVs, **figs/** the nine charts at poster size. Edit poster text in **shrinkflation_poster.pptx**; the charts "
+    "are images, so change them in the notebook and re-insert.",
+])
+
+doc.add_heading("10. Chart by chart", level=1).paragraph_format.page_break_before = True
 para("Each chart below has the takeaway from the poster, what it shows, how to read it, why we picked that chart type, what to watch out for, "
      "and answers to questions you might get.")
 
@@ -203,7 +283,7 @@ chart(1, "back-to-back histogram", "01_histogram.png", "New launches are 21% sma
     ("If someone asks", ["Why medians? Floor area and price are skewed by a few very large homes. The median is the typical home.",
                          "Where are sub sales? They are new homes resold before completion, so they belong to neither group (939 sales, 4%)."]),
 ])
-para("Lead into chart 2: \"So new homes are smaller today. Chart 2 shows when that happened.\"", color=INK2)
+lead("Lead into chart 2: \"So new homes are smaller today. Chart 2 shows when that happened.\"")
 
 chart(2, "line with interquartile band", "02_line_vintage.png", "Homes shrank 43% for land sold after 2008", [
     ("What it shows", "The floor area of every 2020 to 2025 sale of a 99-year leasehold, by the year its lease started. Homes on land sold up "
@@ -223,7 +303,7 @@ chart(2, "line with interquartile band", "02_line_vintage.png", "Homes shrank 43
                          "Did the cap stop the shrink? The timing fits, and URA brought in the cap to curb shoeboxes, but this chart on "
                          "its own cannot prove cause and effect."]),
 ])
-para("Lead into chart 3: \"Which sizes disappeared?\"", color=INK2)
+lead("Lead into chart 3: \"Which sizes disappeared?\"")
 
 chart(3, "100% stacked bar", "03_stacked_mix.png", "Shoeboxes rose from 1% to 13%, big homes fell from 34% to 8%", [
     ("What it shows", "The mix of sizes in each lease-start era, as shares of units."),
@@ -248,7 +328,7 @@ for head, body in [
 ]:
     doc.add_heading(head, level=3)
     bullets(body) if isinstance(body, list) else para(body)
-para("Lead into chart 4: \"Maybe newer homes are only smaller because they are built in different places. Chart 4 checks that.\"", color=INK2)
+lead("Lead into chart 4: \"Maybe newer homes are only smaller because they are built in different places. Chart 4 checks that.\"")
 
 chart(4, "coefficient plot", "04_coefficients.png", "Within the same district the gap stays at −34%", [
     ("What it shows", "How much smaller homes from each era are than 1990 to 2008 homes, before and after holding location fixed. "
@@ -272,7 +352,7 @@ chart(4, "coefficient plot", "04_coefficients.png", "Within the same district th
                          "Why not include new vs resale as a control? Almost every new sale is from the newest era, so the two would "
                          "measure the same thing and muddle the estimate."]),
 ])
-para("Lead into chart 5: \"So the shrink is real. What did it do to the price tag?\"", color=INK2)
+lead("Lead into chart 5: \"So the shrink is real. What did it do to the price tag?\"")
 
 chart(5, "scatter with constant-price curves", "05_scatter_isoprice.png", "Shrinking cut prices to S$1.45M; after 2019 they jump to S$2.05M", [
     ("What it shows", "2025 sales of 99-year leaseholds. From 1990–2008 land to 2013–2018 land, floor area fell 40% (1,216 to 732 sq ft) while "
@@ -292,7 +372,7 @@ chart(5, "scatter with constant-price curves", "05_scatter_isoprice.png", "Shrin
                          "can show is that the smaller homes from that era still cost less today despite their higher PSF, which is the "
                          "trade the shrink was built for."]),
 ])
-para("Lead into chart 6: \"Why does a smaller home mean a lower price tag? Because of how launches are priced.\"", color=INK2)
+lead("Lead into chart 6: \"Why does a smaller home mean a lower price tag? Because of how launches are priced.\"")
 
 chart(6, "violin", "06_violin_pricing.png", "Every unit size sells at its project's PSF, within 1.5%", [
     ("What it shows", "10,389 new-launch sales in 2025 from the 50 projects with at least 20 sales. Each unit's PSF is compared with the median "
@@ -312,30 +392,27 @@ chart(6, "violin", "06_violin_pricing.png", "Every unit size sells at its projec
     ("If someone asks", ["Why do people say shoeboxes are expensive per sq ft? Across the market they are, because they cluster in central "
                          "locations. Inside the same building they are priced like everything else."]),
 ])
-para("Lead into chart 7: \"So why did developers shrink homes from 2009 onwards? Chart 7 brings in outside data.\"", color=INK2)
+lead("Lead into chart 7: \"So why did developers shrink homes from 2009 onwards? Chart 7 brings in outside data.\"")
 
 chart(7, "diverging lollipop", "07_lollipop_macro.png", "Least affordable in 2007–13, when that land was sold", [
-    ("What it shows", "How affordable private homes were each year from 2001 to 2025, against the 25-year average. Homes were 13 to 18% less "
-                      "affordable than usual in 2007, 2008, 2010 and 2011, and 6 to 7% in 2012 and 2013; 2009 dipped to average in the financial "
-                      "crisis. From 2014 incomes grew faster than prices, and 2017 was 16% more affordable than usual. 2025 is 2% below average."),
+    ("What it shows", "How affordable private homes were each year against the 2001–2025 average. 2007 to 2013 were 6 to 18% less affordable "
+                      "than usual, except 2009 (financial crisis). From 2014 incomes grew faster than prices; 2017 was 16% more affordable. "
+                      "2025 is 2% below average."),
     ("How to read it", ["Each lollipop is a year. Orange above the line: less affordable than usual. Blue below: more affordable.",
-                        "The grey band marks 2007 to 2013, the years when the land behind the smallest homes in chart 2 was sold."]),
-    ("Why this chart", "A lollipop shows one value per year against a baseline with less ink than 25 bars, and the two colours make the sign "
-                       "readable at a glance. It is the chart that brings in outside data, as the assignment asked, to explain why developers "
-                       "shrank homes at that time."),
-    ("How it was done", ["Price: URA's private residential price index for non-landed homes (condos and apartments), averaged over the four "
-                         "quarters of each year.",
-                         "Income: SingStat's yearly percentage change in median household employment income (resident employed households, "
-                         "including employer CPF), chained into an index with 2000 = 100.",
-                         "Ratio = price index ÷ income index, shown as a percentage above or below its 2001–2025 average. From 2009 to 2025 "
-                         "both indices about doubled, which is why 2025 sits close to average."]),
-    ("Watch out for", "This is a ratio of two indices, not a price-to-income ratio in years of income. It says when homes were more or less "
-                      "affordable than usual, not how many years of income a home costs. It is also an association: other things changed in "
-                      "2007 to 2013 too, such as interest rates and cooling measures."),
+                        "The grey band marks 2007 to 2013, when the land behind chart 2's smallest homes was sold."]),
+    ("Why this chart", "A lollipop shows one value per year against a baseline with less ink than 25 bars, and the colours show the sign at "
+                       "a glance. It brings in the outside data the assignment asked for, to explain why developers shrank homes then."),
+    ("How it was done", ["Price: URA's non-landed price index (condos and apartments), averaged over each year's four quarters.",
+                         "Income: SingStat's yearly change in median household employment income (including employer CPF), chained into "
+                         "an index with 2000 = 100.",
+                         "Ratio = price index ÷ income index, as a percentage above or below its 2001–2025 average. Both indices about "
+                         "doubled from 2009 to 2025, which is why 2025 sits near average."]),
+    ("Watch out for", "This is a ratio of two indices. It says when homes were more or less affordable than usual, not how many years of "
+                      "income a home costs. It is also an association, since interest rates and cooling measures changed in 2007 to 2013 too."),
     ("If someone asks", ["If 2025 is about average, why are homes hard to afford? The index covers the whole private market. New launches cost "
                          "far more per sq ft than the market as a whole (S$2,572 against S$1,747 for resale), which chart 8 picks up."]),
 ])
-para("Lead into chart 8: \"What does that mean for an actual household today?\"", color=INK2)
+lead("Lead into chart 8: \"What does that mean for an actual household today?\"")
 
 chart(8, "sensitivity heat map", "08_heatmap_tdsr.png", "The median household can borrow for under 800 sq ft", [
     ("What it shows", "The largest home, in sq ft, a household can afford under MAS loan rules, for six incomes and seven PSF levels. At the "
@@ -358,7 +435,7 @@ chart(8, "sensitivity heat map", "08_heatmap_tdsr.png", "The median household ca
     ("If someone asks", ["Why 30 years? It is the longest tenure that still allows a 75% loan. Above 30 years MAS drops the limit to 55%.",
                          "Why 4%? MAS requires banks to work out repayments at 4% or the actual rate, whichever is higher."]),
 ])
-para("Lead into chart 9: \"And once URA stopped homes from shrinking, the price tag had nowhere to go but up.\"", color=INK2)
+lead("Lead into chart 9: \"And once URA stopped homes from shrinking, the price tag had nowhere to go but up.\"")
 
 chart(9, "waterfall", "09_waterfall.png", "Price tag S$1.46M → S$2.18M, driven by PSF (+39%)", [
     ("What it shows", "The typical new-launch price in late 2020 (Aug to Dec, the first months in the Lecture 6 file) against 2025, split into "
@@ -381,7 +458,7 @@ chart(9, "waterfall", "09_waterfall.png", "Price tag S$1.46M → S$2.18M, driven
 ])
 
 # ================= wider points =================
-doc.add_heading("6. Design choices across the poster", level=1)
+doc.add_heading("11. Design choices across the poster", level=1)
 bullets([
     "Nine charts of nine different types, each picked for the question it answers.",
     "One takeaway line per chart, with a number that can be read off the chart.",
@@ -392,7 +469,7 @@ bullets([
     "All charts use the same font and sizes and were drawn at the exact size they have on the poster, so nothing is stretched.",
 ])
 
-doc.add_heading("7. Limitations", level=1)
+doc.add_heading("12. Limitations", level=1)
 bullets([
     "Eras are compared at 2025 prices, not their launch prices, and older homes also lose value with age and a shorter lease.",
     "The vintage charts only include homes that sold in 2020 to 2025. An era whose homes rarely trade can be under-represented.",
@@ -404,7 +481,23 @@ bullets([
     "All results are associations, not proven causes.",
 ])
 
-doc.add_heading("8. Questions to expect", level=1)
+doc.add_heading("13. Key numbers to remember", level=1)
+table(["Number", "What it is", "Chart"], [
+    ["797 vs 1,012 sq ft", "Median new launch vs median resale home, 2025 (−21%)", "1"],
+    ["18% vs 34%", "Share of homes of 1,200 sq ft or more, new vs resale", "1"],
+    ["1,238 → 710 sq ft", "Median size, land sold 2005–08 vs 2013–15 (−43%)", "2"],
+    ["1% → 13% → 9%", "Shoebox share: pre-2009 land, 2013–18 land, post-2019 land", "3"],
+    ["34% → 8% → 11%", "Share of homes over 1,300 sq ft, same eras", "3"],
+    ["−34%", "Size gap for 2013–18 land within the same district, type and sale year", "4"],
+    ["S$1.72M → S$1.45M → S$2.05M", "Median 2025 price: pre-2009 land, 2013–18 land, post-2019 land", "5"],
+    ["within 1.5%", "How close every size band's PSF is to its project's PSF", "6"],
+    ["+6% to +18%", "How much less affordable than usual homes were in 2007–13 (except 2009)", "7"],
+    ["S$12,446 → S$1.91M → 743 sq ft", "Median income, the price it can borrow for, the floor area at 2025 launch PSF", "8"],
+    ["+49% (PSF +39%, area +7%)", "Typical new-launch price, late 2020 to 2025", "9"],
+    ["S$2,572 vs S$1,747", "Median PSF, new launch vs resale, 2025 (resale gives 47% more space per dollar)", "1, answer"],
+], [4.6, 10.0, 2.0])
+
+doc.add_heading("14. Questions to expect", level=1)
 qa([
     ("Isn't this just smaller families?", "Partly, but homes shrank faster. Floor area per household member fell by about a quarter from 2005 "
                                           "to 2015, so households got less space per person, not just smaller homes for smaller households."),
@@ -418,11 +511,16 @@ qa([
                                        "than a new launch (S$1,747 against S$2,572 per sq ft), in exchange for an older building and a shorter lease."),
     ("And for policy?", "With unit sizes capped, affordability now depends on land supply and income growth. Developers can no longer shrink "
                         "their way to a lower price tag, so they compete on layouts that waste less space."),
+    ("Does the cap set a minimum flat size?", "No. It caps how many units a project may have, which sets a floor on the average. Single small "
+                                              "units are still allowed."),
+    ("Why are post-2019 medians below 85 m²?", "The cap counts gross floor area, which includes a share of common space, so the flat itself is "
+                                               "smaller. Medians also sit below averages because a few big units pull the average up."),
+    ("Did the cap cause the shrink to stop?", "The timing fits and the cap was designed to do it, but our charts show timing, not proof."),
     ("What would you do with more time?", "Get launch prices from 2005 to 2019 from URA REALIS to see the price tags at the time, add bedroom "
                                           "counts, and compare projects whose land was sold just before and just after the 2019 cap."),
 ])
 
-doc.add_heading("9. Presenting it in about five minutes", level=1)
+doc.add_heading("15. Presenting it in about five minutes", level=1)
 table(["Part", "Time", "What to cover"], [
     ["Question and key terms", "40 s", "The question, shrinkflation, price tag = floor area × PSF, lease-start year."],
     ["Row 1: what shrank", "80 s", "Charts 1 to 3. Today's gap, when it opened, which sizes went."],
@@ -430,8 +528,22 @@ table(["Part", "Time", "What to cover"], [
     ["Row 3: why and what changed", "80 s", "Charts 7 to 9. Affordability, borrowing limits, the price tag after the cap."],
     ["Answer", "40 s", "The answer line, the three findings, what it means for buyers and policy."],
 ], [4.2, 1.6, 10.8])
+para("Lines you can say, one per part:")
+bullets([
+    "**Open:** \"Shrinkflation is less product for the same price tag. We asked whether Singapore's private homes did that, and whether it is "
+    "still happening.\"",
+    "**Row 1:** \"Today's new launches are 21% smaller than resale homes. The drop came with land sold after 2008, 43% in five years, and "
+    "the big homes are what disappeared.\"",
+    "**Row 2:** \"It is the same inside every district, so it is not location. And because launches are priced per square foot, a smaller "
+    "home really does mean a lower price tag.\"",
+    "**Row 3:** \"It happened when prices were furthest ahead of incomes. Then URA capped it, so now the price tag rises instead: plus 49% "
+    "since 2020, at the edge of what a median household can borrow.\"",
+    "**Close:** \"So yes, homes shrank to stay affordable, until the rules stopped it. For a buyer, compare price per square foot, not the "
+    "price tag.\"",
+    "Say each chart's bold takeaway first, then point at the part of the chart it comes from. Do not read the guide out loud.",
+])
 
-doc.add_heading("10. Sources", level=1)
+doc.add_heading("16. Sources", level=1)
 for s in [
     "[1] URA REALIS private residential transactions: properties2025.csv (course dataset) and properties23.csv (Lecture 6).",
     "[2] URA, Private Residential Property Price Index (1Q2009 = 100), quarterly. https://data.gov.sg/datasets/d_97f8a2e995022d311c6c68cfda6d034c/view",
@@ -442,6 +554,7 @@ for s in [
     "[5] URA circular DC18-06, 17 Oct 2018. https://www.ura.gov.sg/guidelines/archived-circulars/dc18-06/",
     "[6] ONS (2019), The impact of shrinkflation on CPIH, UK. https://www.ons.gov.uk/economy/inflationandpriceindices/articles/theimpactofshrinkflationoncpihuk/howmanyofourproductsaregettingsmaller",
     "[7] Lee Sze Teck (Huttons), Are home sizes in Singapore shrinking?, EdgeProp, 7 Mar 2025. https://www.edgeprop.sg/property-news/are-home-sizes-singapore-shrinking",
+    "[8] EdgeProp, URA curbs excessive development of shoebox units, 17 Oct 2018. https://edgeprop.sg/property-news/ura-curbs-excessive-development-shoebox-units",
 ]:
     para(s, size=9)
 

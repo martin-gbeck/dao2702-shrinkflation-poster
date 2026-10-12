@@ -19,7 +19,7 @@ SW, SH, M = 8.27, 11.69, 0.3
 CW = SW - 2 * M
 GUT = 0.14
 COL = (CW - 2 * GUT) / 3
-FIG_W, FIG_H = 2.36, 1.95
+FIG_W, FIG_H = 2.36, 2.2
 
 prs = Presentation()
 prs.slide_width, prs.slide_height = Inches(SW), Inches(SH)
@@ -78,28 +78,18 @@ def bullets_lead(items: list[tuple[str, str]], color: str = INK) -> list[tuple[l
 
 
 # ---------- title block: what is explored ----------
+LIGHT = "8f8e89"
 text(M, 0.18, CW, 0.42, [([("Shrinkflation in Singapore's Private Homes", {"b": True})], False)], "Title", size=23, color=NAVY)
-text(M, 0.62, CW, 0.22, [([("Did homes shrink to keep the price tag within reach, and is it still happening in 2025?", {})], False)],
-     "Question", size=12.5, color=INK)
-text(M, 0.88, CW, 0.14, [([("DAO2702 Group Assignment  ·  Team [team name]  ·  [member names]", {})], False)], "Team line", size=6.5, color=MUTED)
-
-# ---------- key terms: what you need to read the charts ----------
-KY, KH = 1.06, 1.07
-box(M, KY, CW, KH, INTRO, "Key terms card")
-TERMS = [
-    ("Shrinkflation", "Less product for the same price tag. For a home: fewer sq ft for the same total price [6]."),
-    ("Price tag = floor area × PSF", "PSF is the price per square foot. When PSF rises, a smaller unit keeps the price tag flat."),
-    ("New launch vs resale", "A new launch is bought from the developer. A resale home is second-hand."),
-    ("Lease-start year", "When a 99-year lease began, roughly the year the land was sold and the unit sizes were planned."),
-    ("URA unit cap", "Since 2012 a project's unit count is capped at floor area ÷ 70\u00a0m² (85\u00a0m² since 2019), which sets a "
-                     "floor under unit sizes [5]."),
-    ("MAS loan limit", "Loan repayments can take at most 55% of income, tested at 4% interest or more [4]."),
-]
-tcw = (CW - 0.26 - 2 * 0.22) / 3
-for k, (term, definition) in enumerate(TERMS):
-    col, row = k % 3, k // 3
-    text(M + 0.13 + col * (tcw + 0.22), KY + 0.09 + row * 0.46, tcw, 0.44,
-         [([(term, {"b": True, "size": 7.6, "color": NAVY})], False), ([(definition, {})], False)], f"Term {term}", size=6.8, space_after=0.8)
+text(M, 0.6, CW, 0.14, [([("DAO2702 Group Assignment  ·  Team Jupyter  ·  Martin, Huaitao (Aizen) Yu, Manan, Linda, Midhvan Agarwal, Hoyoung Hwang", {})], False)], "Team line", size=6.5, color=MUTED)
+text(M, 0.8, CW, 0.24, [([("Did homes shrink to keep the price tag within reach, and is it still happening in 2025?", {})], False)],
+     "Question", size=13, color=INK)
+# the few terms needed to read the charts, two quiet lines
+text(M, 1.1, CW, 0.22, [
+    ([("Shrinkflation: less product for the same price tag [6]   ·   PSF: price per sq ft, so price tag = floor area × PSF   ·   "
+       "Lease-start year ≈ year the land was sold", {})], False),
+    ([("URA unit cap: units ≤ floor area ÷ 70 m² (85 m² from 2019) [5]   ·   MAS limit: loan repayments ≤ 55% of income, tested at 4% [4]", {})], False),
+], "Terms line", size=6.2, color=LIGHT)
+KY, KH = 1.1, 0.24   # rows start below the terms line
 
 # ---------- panels: one takeaway per chart ----------
 ROWS = ["WHAT SHRANK", "IS IT REAL, AND HOW DOES IT WORK?", "WHY IT HAPPENED, AND WHAT CHANGED"]
@@ -114,7 +104,7 @@ PANELS = [
     ("08_heatmap_tdsr.png", "The median household can borrow for under 800 sq ft"),
     ("09_waterfall.png", "Price tag S$1.46M → S$2.18M, driven by PSF (+39%)"),
 ]
-LABEL_H, HEAD_H, PANEL_H, ROW_GAP = 0.18, 0.34, 2.4, 0.06
+LABEL_H, HEAD_H, PANEL_H, ROW_GAP = 0.18, 0.34, 2.65, 0.06
 y = KY + KH + 0.07
 for r, label in enumerate(ROWS):
     text(M, y, CW, LABEL_H, [([(f"{r + 1}   {label}", {"b": True})], False)], f"Row {r + 1} label", size=7, color=BLUE2, anchor=MSO_ANCHOR.MIDDLE)
