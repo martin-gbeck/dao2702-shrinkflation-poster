@@ -1,7 +1,12 @@
 """Builds the A4 poster (shrinkflation_poster.pptx) from the figures in figs/.
 
-Run: uv run --no-project --with python-pptx python build_poster.py
+With --insights it builds the second version instead (shrinkflation_poster_insights.pptx): shorter charts from figs_insight/
+(made by make_insight_figs.py) and a short interpretation under each chart.
+
+Run: uv run --no-project --with python-pptx python build_poster.py [--insights]
 """
+
+import sys
 
 from lxml import etree
 from pptx import Presentation
@@ -19,7 +24,10 @@ SW, SH, M = 8.27, 11.69, 0.3
 CW = SW - 2 * M
 GUT = 0.14
 COL = (CW - 2 * GUT) / 3
-FIG_W, FIG_H = 2.36, 2.2
+INSIGHTS = "--insights" in sys.argv
+FIG_W, FIG_H = (2.36, 1.7) if INSIGHTS else (2.36, 2.2)
+FIG_DIR = "figs_insight" if INSIGHTS else "figs"
+INSIGHT_H = 0.47 if INSIGHTS else 0.0
 
 prs = Presentation()
 prs.slide_width, prs.slide_height = Inches(SW), Inches(SH)
@@ -104,7 +112,20 @@ PANELS = [
     ("08_heatmap_tdsr.png", "The median household can borrow for under 800 sq ft"),
     ("09_waterfall.png", "Price tag S$1.46M → S$2.18M, driven by PSF (+39%)"),
 ]
-LABEL_H, HEAD_H, PANEL_H, ROW_GAP = 0.18, 0.34, 2.65, 0.06
+LABEL_H, HEAD_H, ROW_GAP = 0.18, 0.34, 0.05 if INSIGHTS else 0.06
+PANEL_H = 0.05 + HEAD_H + 0.02 + FIG_H + INSIGHT_H + 0.06 if INSIGHTS else 2.65
+# what each chart means, beyond what can be read straight off it (insight version only)
+INSIGHT = [
+    "New launches crowd into 500–900 sq ft. A buyer who wants a family-sized home now mostly has to look at resale.",
+    "A 43% drop in five years is too fast for slowly changing tastes. It lines up with the least affordable years (chart 7) and stops at URA's line.",
+    "The cap cut shoeboxes, yet big homes never returned. Developers moved to compact one- and two-bedders instead.",
+    "The raw and controlled gaps are almost identical, so units shrank everywhere, in cheap suburbs and prime districts alike.",
+    "Smaller homes stayed cheaper despite a higher PSF, the trade shrinkflation relies on. Once the shrink stopped, the price tag rose by S$0.6M.",
+    "Small units carry no premium inside a launch, so every sq ft cut comes straight off the price tag. That made shrinking the easiest lever.",
+    "When prices ran ahead of incomes, developers cut the size of the product instead of its price per sq ft.",
+    "The median new unit sits almost exactly at what the median household can borrow, which suggests launches are sized to the loan limit.",
+    "With the cap fixing sizes, any further PSF rise reaches buyers in full. Affordability now hinges on land costs and incomes.",
+]
 y = KY + KH + 0.07
 for r, label in enumerate(ROWS):
     text(M, y, CW, LABEL_H, [([(f"{r + 1}   {label}", {"b": True})], False)], f"Row {r + 1} label", size=7, color=BLUE2, anchor=MSO_ANCHOR.MIDDLE)
@@ -125,8 +146,11 @@ for r, label in enumerate(ROWS):
         run.font.color.rgb = RGBColor.from_string(WHITE)
         text(px + 0.37, py + 0.05, COL - 0.45, HEAD_H, [([(head, {"b": True})], False)], f"Panel {k + 1} takeaway", size=7.8,
              anchor=MSO_ANCHOR.MIDDLE)
-        pic = slide.shapes.add_picture(f"figs/{fig}", Inches(px + (COL - FIG_W) / 2), Inches(py + 0.05 + HEAD_H + 0.02), Inches(FIG_W), Inches(FIG_H))
+        pic = slide.shapes.add_picture(f"{FIG_DIR}/{fig}", Inches(px + (COL - FIG_W) / 2), Inches(py + 0.05 + HEAD_H + 0.02), Inches(FIG_W), Inches(FIG_H))
         pic.name = f"Panel {k + 1} figure"
+        if INSIGHTS:
+            text(px + 0.12, py + 0.05 + HEAD_H + 0.02 + FIG_H + 0.03, COL - 0.24, INSIGHT_H, [([(INSIGHT[k], {})], False)],
+                 f"Panel {k + 1} insight", size=6.9, color=INK2)
     y = py + PANEL_H + ROW_GAP
 
 # ---------- answer: concludes on the question ----------
@@ -168,5 +192,6 @@ text(M, FY, CW, SH - FY - 0.12, [
                                   "[6] ONS (2019), shrinkflation and CPIH. Code: shrinkflation.ipynb.", {})], False),
 ], "Footnote", size=5, color=MUTED, space_after=1)
 
-prs.save("shrinkflation_poster.pptx")
-print("saved shrinkflation_poster.pptx")
+out = "shrinkflation_poster_insights.pptx" if INSIGHTS else "shrinkflation_poster.pptx"
+prs.save(out)
+print("saved", out)
