@@ -80,7 +80,7 @@ def bullets_lead(items: list[tuple[str, str]], color: str = INK) -> list[tuple[l
 # ---------- title block: what is explored ----------
 LIGHT = "8f8e89"
 text(M, 0.18, CW, 0.42, [([("Shrinkflation in Singapore's Private Homes", {"b": True})], False)], "Title", size=23, color=NAVY)
-text(M, 0.6, CW, 0.14, [([("DAO2702 Group Assignment  ·  Team Jupyter  ·  Martin, Huaitao (Aizen) Yu, Manan, Linda, Midhvan Agarwal, Hoyoung Hwang", {})], False)], "Team line", size=6.5, color=MUTED)
+text(M, 0.6, CW, 0.14, [([("DAO2702 Group Assignment  ·  Team Jupyter  ·  Martin, Huaitao, Manan, Linda, Midhvan, Hoyoung", {})], False)], "Team line", size=6.5, color=MUTED)
 text(M, 0.8, CW, 0.24, [([("Did homes shrink to keep the price tag within reach, and is it still happening in 2025?", {})], False)],
      "Question", size=13, color=INK)
 # the few terms needed to read the charts, two quiet lines
