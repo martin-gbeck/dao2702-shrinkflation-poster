@@ -1,12 +1,10 @@
-"""Builds the A4 poster (shrinkflation_poster.pptx) from the figures in figs/.
+"""Builds the A4 poster (shrinkflation_poster.pptx).
 
-With --insights it builds the second version instead (shrinkflation_poster_insights.pptx): shorter charts from figs_insight/
-(made by make_insight_figs.py) and a short interpretation under each chart.
+Each chart has a takeaway line above it and a short interpretation below it. The charts come from figs_poster/
+(made by make_poster_figs.py), drawn shorter than the notebook's to leave room for the interpretation.
 
-Run: uv run --no-project --with python-pptx python build_poster.py [--insights]
+Run: uv run --no-project --with python-pptx python build_poster.py
 """
-
-import sys
 
 from lxml import etree
 from pptx import Presentation
@@ -24,10 +22,9 @@ SW, SH, M = 8.27, 11.69, 0.3
 CW = SW - 2 * M
 GUT = 0.14
 COL = (CW - 2 * GUT) / 3
-INSIGHTS = "--insights" in sys.argv
-FIG_W, FIG_H = (2.36, 1.7) if INSIGHTS else (2.36, 2.2)
-FIG_DIR = "figs_insight" if INSIGHTS else "figs"
-INSIGHT_H = 0.47 if INSIGHTS else 0.0
+FIG_W, FIG_H = 2.36, 1.7
+FIG_DIR = "figs_poster"
+INSIGHT_H = 0.47
 
 prs = Presentation()
 prs.slide_width, prs.slide_height = Inches(SW), Inches(SH)
@@ -88,7 +85,7 @@ def bullets_lead(items: list[tuple[str, str]], color: str = INK) -> list[tuple[l
 # ---------- title block: what is explored ----------
 LIGHT = "8f8e89"
 text(M, 0.18, CW, 0.42, [([("Shrinkflation in Singapore's Private Homes", {"b": True})], False)], "Title", size=23, color=NAVY)
-text(M, 0.6, CW, 0.14, [([("DAO2702 Group Assignment  ·  Team Jupyter  ·  Martin, Huaitao, Manan, Linda, Midhvan, Hoyoung", {})], False)], "Team line", size=6.5, color=MUTED)
+text(M, 0.6, CW, 0.14, [([("DAO2702 Group Assignment  ·  Team Jupyter  ·  Martin, Huaitao, Manan, Jialin, Midhvan, Hoyoung", {})], False)], "Team line", size=6.5, color=MUTED)
 text(M, 0.8, CW, 0.24, [([("Did homes shrink to keep the price tag within reach, and is it still happening in 2025?", {})], False)],
      "Question", size=13, color=INK)
 # the few terms needed to read the charts, two quiet lines
@@ -112,9 +109,9 @@ PANELS = [
     ("08_heatmap_tdsr.png", "The median household can borrow for under 800 sq ft"),
     ("09_waterfall.png", "Price tag S$1.46M → S$2.18M, driven by PSF (+39%)"),
 ]
-LABEL_H, HEAD_H, ROW_GAP = 0.18, 0.34, 0.05 if INSIGHTS else 0.06
-PANEL_H = 0.05 + HEAD_H + 0.02 + FIG_H + INSIGHT_H + 0.06 if INSIGHTS else 2.65
-# what each chart means, beyond what can be read straight off it (insight version only)
+LABEL_H, HEAD_H, ROW_GAP = 0.18, 0.34, 0.05
+PANEL_H = 0.05 + HEAD_H + 0.02 + FIG_H + INSIGHT_H + 0.06
+# what each chart means, beyond what can be read straight off it
 INSIGHT = [
     "New launches crowd into 500–900 sq ft. A buyer who wants a family-sized home now mostly has to look at resale.",
     "A 43% drop in five years is too fast for slowly changing tastes. It lines up with the least affordable years (chart 7) and stops at URA's line.",
@@ -148,9 +145,8 @@ for r, label in enumerate(ROWS):
              anchor=MSO_ANCHOR.MIDDLE)
         pic = slide.shapes.add_picture(f"{FIG_DIR}/{fig}", Inches(px + (COL - FIG_W) / 2), Inches(py + 0.05 + HEAD_H + 0.02), Inches(FIG_W), Inches(FIG_H))
         pic.name = f"Panel {k + 1} figure"
-        if INSIGHTS:
-            text(px + 0.12, py + 0.05 + HEAD_H + 0.02 + FIG_H + 0.03, COL - 0.24, INSIGHT_H, [([(INSIGHT[k], {})], False)],
-                 f"Panel {k + 1} insight", size=6.9, color=INK2)
+        text(px + 0.12, py + 0.05 + HEAD_H + 0.02 + FIG_H + 0.03, COL - 0.24, INSIGHT_H, [([(INSIGHT[k], {})], False)],
+             f"Panel {k + 1} insight", size=6.9, color=INK2)
     y = py + PANEL_H + ROW_GAP
 
 # ---------- answer: concludes on the question ----------
@@ -192,6 +188,6 @@ text(M, FY, CW, SH - FY - 0.12, [
                                   "[6] ONS (2019), shrinkflation and CPIH. Code: shrinkflation.ipynb.", {})], False),
 ], "Footnote", size=5, color=MUTED, space_after=1)
 
-out = "shrinkflation_poster_insights.pptx" if INSIGHTS else "shrinkflation_poster.pptx"
+out = "shrinkflation_poster.pptx"
 prs.save(out)
 print("saved", out)

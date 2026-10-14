@@ -156,7 +156,7 @@ bullets([
     "as HTML and the Canvas brief asks for IPYNB, so we hand in both: shrinkflation.ipynb and shrinkflation.html.",
     "**How it is graded:** mainly on the quality of the charts (the right chart for the data, following plotting conventions) and on the "
     "insights the charts and comments give. The poster should carry short comments with the key findings or recommendations.",
-    "**Team Jupyter:** Martin, Huaitao, Manan, Linda, Midhvan and Hoyoung. Before submitting, check everyone's name is "
+    "**Team Jupyter:** Martin, Huaitao, Manan, Jialin, Midhvan and Hoyoung. Before submitting, check everyone's name is "
     "spelled the way they want it on the poster, export the PDF from PowerPoint and check it is one page.",
 ])
 
@@ -181,7 +181,8 @@ bullets([
     "**Bottom:** the answer, three findings that match the three rows, and a small footnote with data, limitations and sources.",
 ])
 para("Every chart has one bold line on top. That line is the single most important takeaway, with a number you can read off the chart. "
-     "When you present, say that line first, then point to where it comes from on the chart.")
+     "Under the chart sits a short grey comment on what it means, beyond what the chart shows on its own. "
+     "When you present, say the bold line first, point to where it comes from on the chart, then give the comment.")
 
 doc.add_heading("The nine charts in brief", level=2)
 para("Read the bold line out first, then point at where it comes from on the chart.", color=INK2)
@@ -324,8 +325,8 @@ bullets([
     "**shrinkflation.ipynb:** the notebook we hand in. It loads and cleans the data, draws all nine charts, prints every number on the poster "
     "and ends with the conclusion and references. It runs top to bottom in Colab or Jupyter if the data folder sits next to it, and needs "
     "polars, numpy, matplotlib and statsmodels (Colab has all four).",
-    "**data/** holds the four CSVs, **figs/** the nine charts at poster size. Edit poster text in **shrinkflation_poster.pptx**; the charts "
-    "are images, so change them in the notebook and re-insert.",
+    "**data/** holds the four CSVs, **figs/** the nine charts as the notebook draws them and **figs_poster/** the same charts drawn shorter "
+    "for the poster. Edit poster text in **shrinkflation_poster.pptx**; the charts are images, so change them in the notebook and re-insert.",
 ])
 
 doc.add_heading("Chart by chart in depth", level=2).paragraph_format.page_break_before = True
@@ -526,7 +527,7 @@ chart(9, "waterfall", "09_waterfall.png", "Price tag S$1.46M → S$2.18M, driven
 doc.add_heading("Design choices across the poster", level=2)
 bullets([
     "Nine charts of nine different types, each picked for the question it answers.",
-    "One takeaway line per chart, with a number that can be read off the chart.",
+    "One takeaway line above each chart, with a number that can be read off the chart, and one short comment below it on what it means.",
     "Colours carry the same meaning everywhere: orange is new launches, shoeboxes and price pressure; blue is resale and the baseline. "
     "Ordered things (eras, size bands, the heat map) use one blue that gets darker. The palette was checked for colour-blind separation.",
     "No chart has two y-axes. Two measures on different scales in one chart can suggest a link that is not there.",
