@@ -103,7 +103,7 @@ PANELS = [
     ("02_line_vintage.png", "Homes shrank 43% for land sold after 2008"),
     ("03_stacked_mix.png", "Shoeboxes rose from 1% to 13%, big homes fell from 34% to 8%"),
     ("04_coefficients.png", "Within the same district the gap stays at −34%"),
-    ("05_scatter_isoprice.png", "Shrinking cut prices to S$1.45M; after 2019 they jump to S$2.05M"),
+    ("05_scatter_isoprice.png", "Shrinking cut prices to S$1.45M; after 2019 they jumped to S$2.05M"),
     ("06_violin_pricing.png", "Every unit size sells at its project's PSF, within 1.5%"),
     ("07_lollipop_macro.png", "Least affordable in 2007–13, when that land was sold"),
     ("08_heatmap_tdsr.png", "The median household can borrow for under 800 sq ft"),
@@ -118,10 +118,10 @@ INSIGHT = [
     "The cap cut shoeboxes, yet big homes never returned. Developers moved to compact one- and two-bedders instead.",
     "The raw and controlled gaps are almost identical, so units shrank everywhere, in cheap suburbs and prime districts alike.",
     "Smaller homes stayed cheaper despite a higher PSF, the trade shrinkflation relies on. Once the shrink stopped, the price tag rose by S$0.6M.",
-    "Small units carry no premium inside a launch, so every sq ft cut comes straight off the price tag. That made shrinking the easiest lever.",
-    "When prices ran ahead of incomes, developers cut the size of the product instead of its price per sq ft.",
+    "Small units carry no premium inside a launch, so every sq ft cut comes straight off the price tag, which made shrinking the easiest lever.",
+    "When prices ran ahead of incomes, developers cut floor area instead of the price per sq ft.",
     "The median new unit sits almost exactly at what the median household can borrow, which suggests launches are sized to the loan limit.",
-    "With the cap fixing sizes, any further PSF rise reaches buyers in full. Affordability now hinges on land costs and incomes.",
+    "With the cap fixing sizes, any further PSF rise reaches buyers in full. Affordability now depends on land costs and incomes.",
 ]
 y = KY + KH + 0.07
 for r, label in enumerate(ROWS):
@@ -157,8 +157,8 @@ text(M + 0.16, CY + 0.08, CW - 0.32, 0.34, [([("Answer: ", {"b": True, "color": 
                                                  "Now that shrinking is capped, the price tag rises instead.", {"b": True, "color": WHITE})], False)],
      "Answer line", size=9.2, anchor=MSO_ANCHOR.MIDDLE)
 FINDINGS = [
-    ("1", "Homes on land sold after 2008 are about 40% smaller, and big homes all but disappeared"),
-    ("2", "It is not location. It works because a launch is priced per sq ft, so fewer sq ft means a lower price tag"),
+    ("1", "Homes on land sold after 2008 are about 40% smaller, and big homes fell from 34% to 8%"),
+    ("2", "Location does not explain it. Launches are priced per sq ft, so fewer sq ft means a lower price tag"),
     ("3", "Prices outran incomes when that land was sold. Since the 2019 cap the new-launch price tag is up 49%"),
 ]
 fcw = (CW - 0.32 - 2 * 0.2) / 3
