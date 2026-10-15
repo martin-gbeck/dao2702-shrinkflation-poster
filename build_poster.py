@@ -1,4 +1,4 @@
-"""Builds the A4 poster (shrinkflation_poster.pptx).
+"""Builds the A4 poster (shrinkflation_poster_humanized.pptx).
 
 Each chart has a takeaway line above it and a short interpretation below it. The charts come from figs_poster/
 (made by make_poster_figs.py), drawn shorter than the notebook's to leave room for the interpretation.
@@ -188,6 +188,6 @@ text(M, FY, CW, SH - FY - 0.12, [
                                   "[6] ONS (2019), shrinkflation and CPIH. Code: shrinkflation.ipynb.", {})], False),
 ], "Footnote", size=5, color=MUTED, space_after=1)
 
-out = "shrinkflation_poster.pptx"
+out = "shrinkflation_poster_humanized.pptx"
 prs.save(out)
 print("saved", out)
